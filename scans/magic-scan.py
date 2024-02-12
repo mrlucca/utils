@@ -1,9 +1,11 @@
 import os, sys, time, argparse
+import sqlite3
 from typing import Self, Tuple, Callable, Protocol
 
 assert not ( sys.version_info < (3, 12) ), "minimal python version is not satisfied"
 
 TIME_CONSTRAINT = "%Y-%m-%d %H:%M:%S"
+
 
 class ExportStrategy(Protocol):
     def __enter__(self) -> Self: ...
@@ -23,6 +25,27 @@ class ExportCSVStrategy(ExportStrategy):
 
     def __exit__(self, exc_type, exc_val, exc_tb): self._file.close()
     def push_result(self, rt: tuple): self._file.write(f"{rt[0]};{rt[1]};{rt[2]};{rt[3]}\n")
+
+
+class ExportSQLITEStrategy(ExportStrategy):
+    def __init__(self):
+        self._path = os.path.join(os.getcwd(), "export_result.db")
+        self._conn = None
+        self._cursor = None
+
+    def __enter__(self):
+        self._conn = sqlite3.connect(self._path)
+        self._cursor = self._conn.cursor()
+        self._cursor.execute('CREATE TABLE IF NOT EXISTS filers (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT, size_mb REAL, creation_date DATE, modification_date DATE)')
+        self._conn.commit()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb): 
+        self._conn.commit()
+        self._conn.close()
+
+    def push_result(self, rt: tuple): self._conn.execute(
+        "INSERT INTO filers (path, size_mb, creation_date, modification_date) VALUES (?, ?, ?, ?)", rt)
 
 
 def factory_check_magic_bytes_from(magic_bytes: bytes, read_size: int) -> Callable[[str], bool]:
@@ -69,7 +92,7 @@ FILE_STRATEGIES = {
 
 EXPORT_RESULT_STRATEGIES = {
     "CSV": ExportCSVStrategy,
-    "SQLITE": ...,
+    "SQLITE": ExportSQLITEStrategy,
 }         
 
 
