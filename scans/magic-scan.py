@@ -3,6 +3,7 @@ from typing import Self, Tuple, Callable, Protocol
 
 assert not ( sys.version_info < (3, 12) ), "minimal python version is not satisfied"
 
+TIME_CONSTRAINT = "%Y-%m-%d %H:%M:%S"
 
 class ExportStrategy(Protocol):
     def __enter__(self) -> Self: ...
@@ -44,8 +45,8 @@ def get_file_info(path: str) -> Tuple[float, str, str]:
     size_in_mb = size_in_bytes / (1024 * 1024)
     modification_time = os.path.getmtime(path)
     creation_time = os.path.getctime(path)
-    modification_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(modification_time))
-    creation_date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(creation_time))
+    modification_date = time.strftime(TIME_CONSTRAINT, time.localtime(modification_time))
+    creation_date = time.strftime(TIME_CONSTRAINT, time.localtime(creation_time))
     return size_in_mb, creation_date, modification_date
 
 
