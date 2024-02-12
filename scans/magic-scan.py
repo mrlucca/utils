@@ -8,16 +8,34 @@ minimal_version = (3, 12)
 
 if sys.version_info < minimal_version:
     raise RuntimeError("minimal version is not satisfied")
-
+    
 
 FILE_STRATEGIES = {
-    "SQLITE": ...,
+    "SQLITE": ( 
+        b"\x53\x51\x4c\x69\x74\x65\x20\x66\x6f\x72\x6d\x61\x74\x20\x33\x00",
+        16,
+    ),
 }
 
 EXPORT_RESULT_STRATEGIES = {
     "TXT": ...,
     "SQLITE": ...,
 }
+
+
+def check_magic_bytes_from(path: str, magic_bytes: bytes, read_size: int) -> str | None:
+    if not os.path.exists(path):
+        return
+    
+    try:
+        with open(path, 'rb') as file:
+            header = file.read(read_size) 
+    except (PermissionError, OSError):
+        # TODO add log
+        return False
+    else:
+        return header.startswith(magic_bytes)
+    
 
 def scan_filers(path: str, file_strategy: str | None, export_result: str):
     global FILE_STRATEGIES
