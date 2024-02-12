@@ -100,7 +100,7 @@ def add_export_strategies(name: str, strategy: ExportStrategy):
 def setup_and_run_scan_filers(path: str, file_strategy: str | None, export_result: str):
     file_strategy_resp = MAGIC_FILE_STRATEGIES.get(file_strategy)
     file_strategy_exists = file_strategy_resp is not None
-    assert file_strategy_exists, f"file strategy not found {file_strategy}. You can try {','.join(FILE_STRATEGIES.keys())}"
+    assert file_strategy_exists, f"file strategy not found {file_strategy}. You can try {','.join(MAGIC_FILE_STRATEGIES.keys())}"
     export_result_strategy_resp: ExportStrategy | None = global_export_result_strategies.get(export_result)
     export_result_strategy_exists = export_result_strategy_resp is not None
     assert export_result_strategy_exists, f"export result strategy not found {export_result}. You can try {','.join(global_export_result_strategies.keys())}"
